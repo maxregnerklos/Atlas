@@ -5,157 +5,159 @@ if (-not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdent
     exit
 }
 
-$ErrorActionPreference = 'SilentlyContinue'
-
-[int] $global:column = 0
-[int] $maxColumn = 1
-[int] $separate = 30
-[int] $global:lastPos = 50
-[bool]$global:install = $false
-
-function generate_checkbox {
-    param(
-        [string]$checkboxText,
-        [string]$package,
-        [bool]$enabled = $true
+if not ctypes.windll.shell32.IsUserAnAdmin():
+    ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, __file__, None, 1)
+    sys.exit()
+ 
+import subprocess
+import tkinter as tk
+from tkinter import messagebox
+ 
+def generate_checkbox(checkboxText, package, enabled=True):
+    checkbox = tk.Checkbutton(
+        form,
+        text=checkboxText,
+        variable=checkbox_vars[package],
+        onvalue=1,
+        offvalue=0,
+        state="normal" if enabled else "disabled"
     )
-    $checkbox = new-object System.Windows.Forms.checkbox
-    if ($global:column -ge $maxColumn) {
-        $checkbox.Location = new-object System.Drawing.Size(($global:column * 300), $global:lastPos)
-        $global:column = 0
-        $global:lastPos += $separate
-    }
-    else {
-        $checkbox.Location = new-object System.Drawing.Size(30, $global:lastPos)
-        $global:column = $column + 1
-    }
-    $checkbox.Size = new-object System.Drawing.Size(250, 18)
-    $checkbox.Text = $checkboxText
-    $checkbox.Name = $package
-    $checkbox.Enabled = $enabled
-    
-    $checkbox
-}
-
-[void] [System.Reflection.Assembly]::LoadWithPartialName("System.Windows.Forms")
-[void] [System.Reflection.Assembly]::LoadWithPartialName("System.Drawing")
-
+    checkbox.pack()
+    return checkbox
+ 
 # Set the size of your form
-$Form = New-Object System.Windows.Forms.Form
-$Form.Text = "Install Software | Atlas" # Titlebar
-$Form.ShowIcon = $false
-$Form.MaximizeBox = $false
-$Form.MinimizeBox = $false
-$Form.Size = New-Object System.Drawing.Size(600, 210)
-$Form.AutoSizeMode = 0
-$Form.KeyPreview = $True
-$Form.SizeGripStyle = 2
-
+form = tk.Tk()
+form.title("Install Software | Atlas")
+form.geometry("600x210")
+form.resizable(False, False)
+ 
 # Label
-$Label = New-Object System.Windows.Forms.label
-$Label.Location = New-Object System.Drawing.Size(11, 15)
-$Label.Size = New-Object System.Drawing.Size(255, 15)
-$Label.Text = "Download and install software using Chocolatey:"
-$Form.Controls.Add($Label)
-
-# https://community.chocolatey.org/packages/GoogleChrome
-$Form.Controls.Add((generate_checkbox "Google Chrome" "googlechrome"))
-
-# https://community.chocolatey.org/packages/Firefox
-$Form.Controls.Add((generate_checkbox "Mozilla Firefox" "firefox"))
-
-# https://community.chocolatey.org/packages/brave
-$Form.Controls.Add((generate_checkbox "Brave Browser" "brave"))
-
-# https://community.chocolatey.org/packages/microsoft-edge
-$Form.Controls.Add((generate_checkbox "Microsoft Edge" "microsoft-edge"))
-
-# https://community.chocolatey.org/packages/librewolf
-$Form.Controls.Add((generate_checkbox "LibreWolf" "librewolf"))
-
-# https://community.chocolatey.org/packages/ungoogled-chromium
-$Form.Controls.Add((generate_checkbox "ungoogled-chromium" "ungoogled-chromium"))
-
-# https://community.chocolatey.org/packages/discord
-$Form.Controls.Add((generate_checkbox "Discord" "discord"))
-
-# https://community.chocolatey.org/packages/discord-canary
-$Form.Controls.Add((generate_checkbox "Discord Canary" "discord-canary"))
-
-# https://community.chocolatey.org/packages/steam
-$Form.Controls.Add((generate_checkbox "Steam" "steam"))
-
-# https://community.chocolatey.org/packages/playnite
-$Form.Controls.Add((generate_checkbox "Playnite" "playnite"))
-
-# https://community.chocolatey.org/packages/rare
-$Form.Controls.Add((generate_checkbox "Rare" "rare"))
-
-# https://community.chocolatey.org/packages/Everything
-$Form.Controls.Add((generate_checkbox "Everything" "everything"))
-
-# https://community.chocolatey.org/packages/thunderbird
-$Form.Controls.Add((generate_checkbox "Mozilla Thunderbird" "thunderbird"))
-
-# https://community.chocolatey.org/packages/foobar2000
-$Form.Controls.Add((generate_checkbox "foobar2000" "foobar2000"))
-
-# https://community.chocolatey.org/packages/irfanview
-$Form.Controls.Add((generate_checkbox "IrfanView" "irfanview"))
-
-# https://community.chocolatey.org/packages/git
-$Form.Controls.Add((generate_checkbox "Git" "git"))
-
-# https://community.chocolatey.org/packages/mpv
-$Form.Controls.Add((generate_checkbox "mpv" "mpv"))
-
-# https://community.chocolatey.org/packages/vlc
-$Form.Controls.Add((generate_checkbox "VLC" "vlc"))
-
-# https://community.chocolatey.org/packages/putty
-$Form.Controls.Add((generate_checkbox "PuTTY" "putty"))
-
-# https://community.chocolatey.org/packages/teamspeak
-$Form.Controls.Add((generate_checkbox "Teamspeak" "teamspeak"))
-
-# https://community.chocolatey.org/packages/spotify
-$Form.Controls.Add((generate_checkbox "Spotify" "spotify"))
-
-# https://community.chocolatey.org/packages/obs-studio
-$Form.Controls.Add((generate_checkbox "OBS Studio" "obs-studio"))
-
-# https://community.chocolatey.org/packages/msiafterburner
-$Form.Controls.Add((generate_checkbox "MSI Afterburner" "msiafterburner"))
-
-# https://community.chocolatey.org/packages/cpu-z
-$Form.Controls.Add((generate_checkbox "CPU-Z" "cpu-z"))
-
-# https://community.chocolatey.org/packages/gpu-z
-$Form.Controls.Add((generate_checkbox "GPU-Z" "gpu-z"))
-
-# https://community.chocolatey.org/packages/notepadplusplus
-$Form.Controls.Add((generate_checkbox "Notepad++" "notepadplusplus"))
-
-# https://community.chocolatey.org/packages/vscode
-$Form.Controls.Add((generate_checkbox "VSCode" "vscode"))
-
-# https://community.chocolatey.org/packages/bulk-crap-uninstaller
-$Form.Controls.Add((generate_checkbox "Bulk Crap Uninstaller" "bulk-crap-uninstaller"))
-
-# https://community.chocolatey.org/packages/hwinfo
-$Form.Controls.Add((generate_checkbox "HWiNFO" "hwinfo"))
-
-# https://community.chocolatey.org/packages/kav
-$Form.Controls.Add((generate_checkbox "Kaspersky Anti-Virus" "kav"))
-
-# https://community.chocolatey.org/packages/microsoft-windows-terminal
-$Form.Controls.Add((generate_checkbox "Windows Terminal" "microsoft-windows-terminal"))
-
-# https://community.chocolatey.org/packages/waterfox
-$Form.Controls.Add((generate_checkbox "Waterfox" "waterfox"))
-
-# https://community.chocolatey.org/packages/lightshot
-$Form.Controls.Add((generate_checkbox "Lightshot" "lightshot"))
+label = tk.Label(form, text="Download and install software using Chocolatey:")
+label.pack()
+ 
+# Checkbox variables
+checkbox_vars = {}
+ 
+# Generate checkboxes
+checkbox_vars["googlechrome"] = tk.IntVar()
+generate_checkbox("Google Chrome", "googlechrome")
+ 
+checkbox_vars["firefox"] = tk.IntVar()
+generate_checkbox("Mozilla Firefox", "firefox")
+ 
+checkbox_vars["brave"] = tk.IntVar()
+generate_checkbox("Brave Browser", "brave")
+ 
+checkbox_vars["microsoft-edge"] = tk.IntVar()
+generate_checkbox("Microsoft Edge", "microsoft-edge")
+ 
+checkbox_vars["librewolf"] = tk.IntVar()
+generate_checkbox("LibreWolf", "librewolf")
+ 
+checkbox_vars["ungoogled-chromium"] = tk.IntVar()
+generate_checkbox("ungoogled-chromium", "ungoogled-chromium")
+ 
+checkbox_vars["discord"] = tk.IntVar()
+generate_checkbox("Discord", "discord")
+ 
+checkbox_vars["discord-canary"] = tk.IntVar()
+generate_checkbox("Discord Canary", "discord-canary")
+ 
+checkbox_vars["steam"] = tk.IntVar()
+generate_checkbox("Steam", "steam")
+ 
+checkbox_vars["playnite"] = tk.IntVar()
+generate_checkbox("Playnite", "playnite")
+ 
+checkbox_vars["rare"] = tk.IntVar()
+generate_checkbox("Rare", "rare")
+ 
+checkbox_vars["everything"] = tk.IntVar()
+generate_checkbox("Everything", "everything")
+ 
+checkbox_vars["thunderbird"] = tk.IntVar()
+generate_checkbox("Mozilla Thunderbird", "thunderbird")
+ 
+checkbox_vars["foobar2000"] = tk.IntVar()
+generate_checkbox("foobar2000", "foobar2000")
+ 
+checkbox_vars["irfanview"] = tk.IntVar()
+generate_checkbox("IrfanView", "irfanview")
+ 
+checkbox_vars["git"] = tk.IntVar()
+generate_checkbox("Git", "git")
+ 
+checkbox_vars["mpv"] = tk.IntVar()
+generate_checkbox("mpv", "mpv")
+ 
+checkbox_vars["vlc"] = tk.IntVar()
+generate_checkbox("VLC", "vlc")
+ 
+checkbox_vars["putty"] = tk.IntVar()
+generate_checkbox("PuTTY", "putty")
+ 
+checkbox_vars["teamspeak"] = tk.IntVar()
+generate_checkbox("Teamspeak", "teamspeak")
+ 
+checkbox_vars["spotify"] = tk.IntVar()
+generate_checkbox("Spotify", "spotify")
+ 
+checkbox_vars["obs-studio"] = tk.IntVar()
+generate_checkbox("OBS Studio", "obs-studio")
+ 
+checkbox_vars["msiafterburner"] = tk.IntVar()
+generate_checkbox("MSI Afterburner", "msiafterburner")
+ 
+checkbox_vars["cpu-z"] = tk.IntVar()
+generate_checkbox("CPU-Z", "cpu-z")
+ 
+checkbox_vars["gpu-z"] = tk.IntVar()
+generate_checkbox("GPU-Z", "gpu-z")
+ 
+checkbox_vars["notepadplusplus"] = tk.IntVar()
+generate_checkbox("Notepad++", "notepadplusplus")
+ 
+checkbox_vars["vscode"] = tk.IntVar()
+generate_checkbox("VSCode", "vscode")
+ 
+checkbox_vars["bulk-crap-uninstaller"] = tk.IntVar()
+generate_checkbox("Bulk Crap Uninstaller", "bulk-crap-uninstaller")
+ 
+checkbox_vars["hwinfo"]= tk.IntVar()
+generate_checkbox("HWiNFO", "hwinfo")
+ 
+checkbox_vars["kav"] = tk.IntVar()
+generate_checkbox("Kaspersky Anti-Virus", "kav")
+ 
+checkbox_vars["microsoft-windows-terminal"] = tk.IntVar()
+generate_checkbox("Windows Terminal", "microsoft-windows-terminal")
+ 
+checkbox_vars["waterfox"] = tk.IntVar()
+generate_checkbox("Waterfox", "waterfox")
+ 
+checkbox_vars["lightshot"] = tk.IntVar()
+generate_checkbox("Lightshot", "lightshot")
+ 
+# Install Button
+def install_packages():
+    checked_packages = [package for package, var in checkbox_vars.items() if var.get() == 1]
+    if len(checked_packages) == 0:
+        messagebox.showinfo("No package selected", "Please select at least one software package to install.")
+    else:
+        install_command = f"choco install {' '.join(checked_packages)} -y --force --allow-empty-checksums"
+        subprocess.run(install_command, shell=True)
+ 
+install_button = tk.Button(form, text="Install", command=install_packages)
+install_button.pack()
+ 
+# Activate the form
+form.mainloop()
+ 
+# Install selected packages
+checked_packages = [package for package, var in checkbox_vars.items() if var.get() == 1]
+if len(checked_packages) > 0:
+    install_command = f"choco install {' '.join(checked_packages)} -y --force --allow-empty-checksums"
+    subprocess.run(install_command, shell=True)
 
 if ($global:column -ne 0) {
     $global:lastPos += $separate
